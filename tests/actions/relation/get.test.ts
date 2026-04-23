@@ -1,18 +1,25 @@
+import { describe, it, expect, mock, beforeEach } from "bun:test";
 import { IExecuteFunctions } from "n8n-workflow";
+
+mock.module("../../../nodes/OnOffice/utils/apiRequest", () => ({
+  apiRequest: mock(),
+}));
+
 import { getRelation } from "../../../nodes/OnOffice/actions/relation/get/execute";
 import { apiRequest } from "../../../nodes/OnOffice/utils/apiRequest";
 import relationSuccessResponse from "../../__fixtures__/api-responses/relation-success.json";
 import relationEmptyResponse from "../../__fixtures__/api-responses/relation-empty.json";
 
-jest.mock("../../../nodes/OnOffice/utils/apiRequest");
+type MockFn = ReturnType<typeof mock>;
+const mockApiRequest = apiRequest as unknown as MockFn;
 
 describe("OnOffice Relation Get Action", () => {
   let mockExecuteFunctions: IExecuteFunctions;
 
   beforeEach(() => {
     mockExecuteFunctions = {
-      getNodeParameter: jest.fn(),
-      getNode: jest.fn(() => ({
+      getNodeParameter: mock(),
+      getNode: mock(() => ({
         id: "test-node-id",
         name: "OnOffice",
         type: "n8n-nodes-onoffice.onoffice",
@@ -27,13 +34,13 @@ describe("OnOffice Relation Get Action", () => {
       },
     } as unknown as IExecuteFunctions;
 
-    jest.clearAllMocks();
+    mockApiRequest.mockClear();
   });
 
   describe("Basic get operation with parentids", () => {
     it("should successfully get relation with parentids", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       mockGetNodeParameter.mockImplementation((paramName: string) => {
         if (paramName === "relationtype") {
@@ -48,7 +55,7 @@ describe("OnOffice Relation Get Action", () => {
         return undefined;
       });
 
-      (apiRequest as jest.Mock).mockResolvedValue(relationSuccessResponse);
+      (apiRequest as MockFn).mockResolvedValue(relationSuccessResponse);
 
       const result = await getRelation.call(mockExecuteFunctions, 0);
 
@@ -82,7 +89,7 @@ describe("OnOffice Relation Get Action", () => {
 
     it("should handle multiple parentids", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       mockGetNodeParameter.mockImplementation((paramName: string) => {
         if (paramName === "relationtype") {
@@ -97,7 +104,7 @@ describe("OnOffice Relation Get Action", () => {
         return undefined;
       });
 
-      (apiRequest as jest.Mock).mockResolvedValue(relationSuccessResponse);
+      (apiRequest as MockFn).mockResolvedValue(relationSuccessResponse);
 
       const result = await getRelation.call(mockExecuteFunctions, 0);
 
@@ -116,7 +123,7 @@ describe("OnOffice Relation Get Action", () => {
 
     it("should handle parentids with spaces", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       mockGetNodeParameter.mockImplementation((paramName: string) => {
         if (paramName === "relationtype") {
@@ -131,7 +138,7 @@ describe("OnOffice Relation Get Action", () => {
         return undefined;
       });
 
-      (apiRequest as jest.Mock).mockResolvedValue(relationSuccessResponse);
+      (apiRequest as MockFn).mockResolvedValue(relationSuccessResponse);
 
       const result = await getRelation.call(mockExecuteFunctions, 0);
 
@@ -152,7 +159,7 @@ describe("OnOffice Relation Get Action", () => {
   describe("Basic get operation with childids", () => {
     it("should successfully get relation with childids", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       mockGetNodeParameter.mockImplementation((paramName: string) => {
         if (paramName === "relationtype") {
@@ -167,7 +174,7 @@ describe("OnOffice Relation Get Action", () => {
         return undefined;
       });
 
-      (apiRequest as jest.Mock).mockResolvedValue(relationSuccessResponse);
+      (apiRequest as MockFn).mockResolvedValue(relationSuccessResponse);
 
       const result = await getRelation.call(mockExecuteFunctions, 0);
 
@@ -186,7 +193,7 @@ describe("OnOffice Relation Get Action", () => {
 
     it("should handle multiple childids", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       mockGetNodeParameter.mockImplementation((paramName: string) => {
         if (paramName === "relationtype") {
@@ -201,7 +208,7 @@ describe("OnOffice Relation Get Action", () => {
         return undefined;
       });
 
-      (apiRequest as jest.Mock).mockResolvedValue(relationSuccessResponse);
+      (apiRequest as MockFn).mockResolvedValue(relationSuccessResponse);
 
       const result = await getRelation.call(mockExecuteFunctions, 0);
 
@@ -222,7 +229,7 @@ describe("OnOffice Relation Get Action", () => {
   describe("Different relation types", () => {
     it("should handle estate-address buyer relation type", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       mockGetNodeParameter.mockImplementation((paramName: string) => {
         if (paramName === "relationtype") {
@@ -237,7 +244,7 @@ describe("OnOffice Relation Get Action", () => {
         return undefined;
       });
 
-      (apiRequest as jest.Mock).mockResolvedValue(relationSuccessResponse);
+      (apiRequest as MockFn).mockResolvedValue(relationSuccessResponse);
 
       const result = await getRelation.call(mockExecuteFunctions, 0);
 
@@ -256,7 +263,7 @@ describe("OnOffice Relation Get Action", () => {
 
     it("should handle estate-address renter relation type", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       mockGetNodeParameter.mockImplementation((paramName: string) => {
         if (paramName === "relationtype") {
@@ -271,7 +278,7 @@ describe("OnOffice Relation Get Action", () => {
         return undefined;
       });
 
-      (apiRequest as jest.Mock).mockResolvedValue(relationSuccessResponse);
+      (apiRequest as MockFn).mockResolvedValue(relationSuccessResponse);
 
       const result = await getRelation.call(mockExecuteFunctions, 0);
 
@@ -290,7 +297,7 @@ describe("OnOffice Relation Get Action", () => {
 
     it("should handle address-estate matching relation type", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       mockGetNodeParameter.mockImplementation((paramName: string) => {
         if (paramName === "relationtype") {
@@ -305,7 +312,7 @@ describe("OnOffice Relation Get Action", () => {
         return undefined;
       });
 
-      (apiRequest as jest.Mock).mockResolvedValue(relationSuccessResponse);
+      (apiRequest as MockFn).mockResolvedValue(relationSuccessResponse);
 
       const result = await getRelation.call(mockExecuteFunctions, 0);
 
@@ -324,7 +331,7 @@ describe("OnOffice Relation Get Action", () => {
 
     it("should handle project-address relation type", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       mockGetNodeParameter.mockImplementation((paramName: string) => {
         if (paramName === "relationtype") {
@@ -339,7 +346,7 @@ describe("OnOffice Relation Get Action", () => {
         return undefined;
       });
 
-      (apiRequest as jest.Mock).mockResolvedValue(relationSuccessResponse);
+      (apiRequest as MockFn).mockResolvedValue(relationSuccessResponse);
 
       const result = await getRelation.call(mockExecuteFunctions, 0);
 
@@ -360,7 +367,7 @@ describe("OnOffice Relation Get Action", () => {
   describe("Empty response handling", () => {
     it("should handle empty relation response", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       mockGetNodeParameter.mockImplementation((paramName: string) => {
         if (paramName === "relationtype") {
@@ -375,7 +382,7 @@ describe("OnOffice Relation Get Action", () => {
         return undefined;
       });
 
-      (apiRequest as jest.Mock).mockResolvedValue(relationEmptyResponse);
+      (apiRequest as MockFn).mockResolvedValue(relationEmptyResponse);
 
       const result = await getRelation.call(mockExecuteFunctions, 0);
 
@@ -398,7 +405,7 @@ describe("OnOffice Relation Get Action", () => {
   describe("Validation errors", () => {
     it("should throw error when neither parentids nor childids are provided", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       mockGetNodeParameter.mockImplementation((paramName: string) => {
         if (paramName === "relationtype") {
@@ -420,7 +427,7 @@ describe("OnOffice Relation Get Action", () => {
 
     it("should throw error when both parentids and childids are provided", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       mockGetNodeParameter.mockImplementation((paramName: string) => {
         if (paramName === "relationtype") {
@@ -444,7 +451,7 @@ describe("OnOffice Relation Get Action", () => {
   describe("Response data structure", () => {
     it("should verify correct response structure with related IDs", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       mockGetNodeParameter.mockImplementation((paramName: string) => {
         if (paramName === "relationtype") {
@@ -459,7 +466,7 @@ describe("OnOffice Relation Get Action", () => {
         return undefined;
       });
 
-      (apiRequest as jest.Mock).mockResolvedValue(relationSuccessResponse);
+      (apiRequest as MockFn).mockResolvedValue(relationSuccessResponse);
 
       const result = await getRelation.call(mockExecuteFunctions, 0);
 
@@ -485,7 +492,7 @@ describe("OnOffice Relation Get Action", () => {
   describe("Edge cases", () => {
     it("should handle very large list of parentids", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       const largeIdList = Array.from({ length: 100 }, (_, i) => i + 1).join(
         ",",
@@ -504,7 +511,7 @@ describe("OnOffice Relation Get Action", () => {
         return undefined;
       });
 
-      (apiRequest as jest.Mock).mockResolvedValue(relationSuccessResponse);
+      (apiRequest as MockFn).mockResolvedValue(relationSuccessResponse);
 
       const result = await getRelation.call(mockExecuteFunctions, 0);
 
@@ -521,7 +528,7 @@ describe("OnOffice Relation Get Action", () => {
 
     it("should handle trailing comma in parentids", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       mockGetNodeParameter.mockImplementation((paramName: string) => {
         if (paramName === "relationtype") {
@@ -536,7 +543,7 @@ describe("OnOffice Relation Get Action", () => {
         return undefined;
       });
 
-      (apiRequest as jest.Mock).mockResolvedValue(relationSuccessResponse);
+      (apiRequest as MockFn).mockResolvedValue(relationSuccessResponse);
 
       const result = await getRelation.call(mockExecuteFunctions, 0);
 
@@ -555,7 +562,7 @@ describe("OnOffice Relation Get Action", () => {
 
     it("should filter out invalid numbers from parentids", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       mockGetNodeParameter.mockImplementation((paramName: string) => {
         if (paramName === "relationtype") {
@@ -570,7 +577,7 @@ describe("OnOffice Relation Get Action", () => {
         return undefined;
       });
 
-      (apiRequest as jest.Mock).mockResolvedValue(relationSuccessResponse);
+      (apiRequest as MockFn).mockResolvedValue(relationSuccessResponse);
 
       const result = await getRelation.call(mockExecuteFunctions, 0);
 

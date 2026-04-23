@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bunx tsc *)",
+      "Bash(echo \"exit=$?\")",
+      "Bash(bunx n8n-node *)"
+    ]
+  }
+}

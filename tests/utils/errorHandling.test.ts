@@ -1,3 +1,4 @@
+import { describe, it, expect, mock } from "bun:test";
 import { IExecuteFunctions } from "n8n-workflow";
 import {
   handleExecutionError,
@@ -8,7 +9,7 @@ import {
 
 describe("errorHandling", () => {
   const mockContext = {
-    getNode: jest.fn(() => ({ name: "TestNode" })),
+    getNode: mock(() => ({ name: "TestNode" })),
   } as unknown as IExecuteFunctions;
 
   describe("handleExecutionError", () => {

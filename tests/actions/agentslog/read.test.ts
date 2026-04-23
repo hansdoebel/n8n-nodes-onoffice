@@ -1,17 +1,24 @@
+import { describe, it, expect, mock, beforeEach } from "bun:test";
 import { IExecuteFunctions } from "n8n-workflow";
+
+mock.module("../../../nodes/OnOffice/utils/apiRequest", () => ({
+  apiRequest: mock(),
+}));
+
 import { readAgentslog } from "../../../nodes/OnOffice/actions/agentslog/read/execute";
 import { apiRequest } from "../../../nodes/OnOffice/utils/apiRequest";
 import agentslogSuccessResponse from "../../__fixtures__/api-responses/agentslog-success.json";
 
-jest.mock("../../../nodes/OnOffice/utils/apiRequest");
+type MockFn = ReturnType<typeof mock>;
+const mockApiRequest = apiRequest as unknown as MockFn;
 
 describe("OnOffice Agentslog Read Action", () => {
   let mockExecuteFunctions: IExecuteFunctions;
 
   beforeEach(() => {
     mockExecuteFunctions = {
-      getNodeParameter: jest.fn(),
-      getNode: jest.fn(() => ({
+      getNodeParameter: mock(),
+      getNode: mock(() => ({
         id: "test-node-id",
         name: "OnOffice",
         type: "n8n-nodes-onoffice.onoffice",
@@ -26,13 +33,13 @@ describe("OnOffice Agentslog Read Action", () => {
       },
     } as unknown as IExecuteFunctions;
 
-    jest.clearAllMocks();
+    mockApiRequest.mockClear();
   });
 
   describe("Basic read operation", () => {
     it("should successfully read agentslog with addressid and selected fields", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       mockGetNodeParameter.mockImplementation((paramName: string) => {
         if (paramName === "parameters") {
@@ -57,7 +64,7 @@ describe("OnOffice Agentslog Read Action", () => {
         return undefined;
       });
 
-      (apiRequest as jest.Mock).mockResolvedValue(agentslogSuccessResponse);
+      (apiRequest as MockFn).mockResolvedValue(agentslogSuccessResponse);
 
       const result = await readAgentslog.call(mockExecuteFunctions, 0);
 
@@ -97,7 +104,7 @@ describe("OnOffice Agentslog Read Action", () => {
 
     it("should handle multiple addressids as comma-separated values", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       mockGetNodeParameter.mockImplementation((paramName: string) => {
         if (paramName === "parameters") {
@@ -111,7 +118,7 @@ describe("OnOffice Agentslog Read Action", () => {
         return undefined;
       });
 
-      (apiRequest as jest.Mock).mockResolvedValue(agentslogSuccessResponse);
+      (apiRequest as MockFn).mockResolvedValue(agentslogSuccessResponse);
 
       const result = await readAgentslog.call(mockExecuteFunctions, 0);
 
@@ -131,7 +138,7 @@ describe("OnOffice Agentslog Read Action", () => {
 
     it("should handle estateid parameter", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       mockGetNodeParameter.mockImplementation((paramName: string) => {
         if (paramName === "parameters") {
@@ -145,7 +152,7 @@ describe("OnOffice Agentslog Read Action", () => {
         return undefined;
       });
 
-      (apiRequest as jest.Mock).mockResolvedValue(agentslogSuccessResponse);
+      (apiRequest as MockFn).mockResolvedValue(agentslogSuccessResponse);
 
       const result = await readAgentslog.call(mockExecuteFunctions, 0);
 
@@ -165,7 +172,7 @@ describe("OnOffice Agentslog Read Action", () => {
 
     it("should handle projectid parameter", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       mockGetNodeParameter.mockImplementation((paramName: string) => {
         if (paramName === "parameters") {
@@ -179,7 +186,7 @@ describe("OnOffice Agentslog Read Action", () => {
         return undefined;
       });
 
-      (apiRequest as jest.Mock).mockResolvedValue(agentslogSuccessResponse);
+      (apiRequest as MockFn).mockResolvedValue(agentslogSuccessResponse);
 
       const result = await readAgentslog.call(mockExecuteFunctions, 0);
 
@@ -201,7 +208,7 @@ describe("OnOffice Agentslog Read Action", () => {
   describe("Filter operations", () => {
     it("should handle filter rules with IN operator", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       mockGetNodeParameter.mockImplementation((paramName: string) => {
         if (paramName === "parameters") {
@@ -223,7 +230,7 @@ describe("OnOffice Agentslog Read Action", () => {
         return undefined;
       });
 
-      (apiRequest as jest.Mock).mockResolvedValue(agentslogSuccessResponse);
+      (apiRequest as MockFn).mockResolvedValue(agentslogSuccessResponse);
 
       const result = await readAgentslog.call(mockExecuteFunctions, 0);
 
@@ -247,7 +254,7 @@ describe("OnOffice Agentslog Read Action", () => {
 
     it("should handle filter rules with BETWEEN operator", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       mockGetNodeParameter.mockImplementation((paramName: string) => {
         if (paramName === "parameters") {
@@ -269,7 +276,7 @@ describe("OnOffice Agentslog Read Action", () => {
         return undefined;
       });
 
-      (apiRequest as jest.Mock).mockResolvedValue(agentslogSuccessResponse);
+      (apiRequest as MockFn).mockResolvedValue(agentslogSuccessResponse);
 
       const result = await readAgentslog.call(mockExecuteFunctions, 0);
 
@@ -293,7 +300,7 @@ describe("OnOffice Agentslog Read Action", () => {
 
     it("should handle multiple filter rules on different fields", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       mockGetNodeParameter.mockImplementation((paramName: string) => {
         if (paramName === "parameters") {
@@ -320,7 +327,7 @@ describe("OnOffice Agentslog Read Action", () => {
         return undefined;
       });
 
-      (apiRequest as jest.Mock).mockResolvedValue(agentslogSuccessResponse);
+      (apiRequest as MockFn).mockResolvedValue(agentslogSuccessResponse);
 
       const result = await readAgentslog.call(mockExecuteFunctions, 0);
 
@@ -350,7 +357,7 @@ describe("OnOffice Agentslog Read Action", () => {
 
     it("should handle filter as JSON string", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       const filterObject = {
         Aktionsart: [{ op: "=", val: "Download" }],
@@ -368,7 +375,7 @@ describe("OnOffice Agentslog Read Action", () => {
         return undefined;
       });
 
-      (apiRequest as jest.Mock).mockResolvedValue(agentslogSuccessResponse);
+      (apiRequest as MockFn).mockResolvedValue(agentslogSuccessResponse);
 
       const result = await readAgentslog.call(mockExecuteFunctions, 0);
 
@@ -385,7 +392,7 @@ describe("OnOffice Agentslog Read Action", () => {
 
     it("should handle filter as object", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       const filterObject = {
         Aktionsart: [{ op: "=", val: "Download" }],
@@ -403,7 +410,7 @@ describe("OnOffice Agentslog Read Action", () => {
         return undefined;
       });
 
-      (apiRequest as jest.Mock).mockResolvedValue(agentslogSuccessResponse);
+      (apiRequest as MockFn).mockResolvedValue(agentslogSuccessResponse);
 
       const result = await readAgentslog.call(mockExecuteFunctions, 0);
 
@@ -420,7 +427,7 @@ describe("OnOffice Agentslog Read Action", () => {
 
     it("should throw error for invalid JSON filter", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       mockGetNodeParameter.mockImplementation((paramName: string) => {
         if (paramName === "parameters") {
@@ -443,7 +450,7 @@ describe("OnOffice Agentslog Read Action", () => {
   describe("Pagination and sorting", () => {
     it("should handle pagination parameters", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       mockGetNodeParameter.mockImplementation((paramName: string) => {
         if (paramName === "parameters") {
@@ -458,7 +465,7 @@ describe("OnOffice Agentslog Read Action", () => {
         return undefined;
       });
 
-      (apiRequest as jest.Mock).mockResolvedValue(agentslogSuccessResponse);
+      (apiRequest as MockFn).mockResolvedValue(agentslogSuccessResponse);
 
       const result = await readAgentslog.call(mockExecuteFunctions, 0);
 
@@ -476,7 +483,7 @@ describe("OnOffice Agentslog Read Action", () => {
 
     it("should handle sorting parameters", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       mockGetNodeParameter.mockImplementation((paramName: string) => {
         if (paramName === "parameters") {
@@ -491,7 +498,7 @@ describe("OnOffice Agentslog Read Action", () => {
         return undefined;
       });
 
-      (apiRequest as jest.Mock).mockResolvedValue(agentslogSuccessResponse);
+      (apiRequest as MockFn).mockResolvedValue(agentslogSuccessResponse);
 
       const result = await readAgentslog.call(mockExecuteFunctions, 0);
 
@@ -511,7 +518,7 @@ describe("OnOffice Agentslog Read Action", () => {
   describe("Additional fields", () => {
     it("should handle fullmail parameter", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       mockGetNodeParameter.mockImplementation((paramName: string) => {
         if (paramName === "parameters") {
@@ -525,7 +532,7 @@ describe("OnOffice Agentslog Read Action", () => {
         return undefined;
       });
 
-      (apiRequest as jest.Mock).mockResolvedValue(agentslogSuccessResponse);
+      (apiRequest as MockFn).mockResolvedValue(agentslogSuccessResponse);
 
       const result = await readAgentslog.call(mockExecuteFunctions, 0);
 
@@ -542,7 +549,7 @@ describe("OnOffice Agentslog Read Action", () => {
 
     it("should handle tracking parameter", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       mockGetNodeParameter.mockImplementation((paramName: string) => {
         if (paramName === "parameters") {
@@ -556,7 +563,7 @@ describe("OnOffice Agentslog Read Action", () => {
         return undefined;
       });
 
-      (apiRequest as jest.Mock).mockResolvedValue(agentslogSuccessResponse);
+      (apiRequest as MockFn).mockResolvedValue(agentslogSuccessResponse);
 
       const result = await readAgentslog.call(mockExecuteFunctions, 0);
 
@@ -575,7 +582,7 @@ describe("OnOffice Agentslog Read Action", () => {
   describe("Complex scenarios", () => {
     it("should handle complete request with all parameters", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       mockGetNodeParameter.mockImplementation((paramName: string) => {
         if (paramName === "parameters") {
@@ -606,7 +613,7 @@ describe("OnOffice Agentslog Read Action", () => {
         return undefined;
       });
 
-      (apiRequest as jest.Mock).mockResolvedValue(agentslogSuccessResponse);
+      (apiRequest as MockFn).mockResolvedValue(agentslogSuccessResponse);
 
       const result = await readAgentslog.call(mockExecuteFunctions, 0);
 
@@ -637,7 +644,7 @@ describe("OnOffice Agentslog Read Action", () => {
 
     it("should handle minimal request with no optional parameters", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       mockGetNodeParameter.mockImplementation((paramName: string) => {
         if (paramName === "parameters") {
@@ -649,7 +656,7 @@ describe("OnOffice Agentslog Read Action", () => {
         return undefined;
       });
 
-      (apiRequest as jest.Mock).mockResolvedValue(agentslogSuccessResponse);
+      (apiRequest as MockFn).mockResolvedValue(agentslogSuccessResponse);
 
       const result = await readAgentslog.call(mockExecuteFunctions, 0);
 

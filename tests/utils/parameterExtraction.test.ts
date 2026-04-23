@@ -1,3 +1,4 @@
+import { describe, it, expect, mock, beforeEach } from "bun:test";
 import { IExecuteFunctions } from "n8n-workflow";
 import {
   extractBoolean,
@@ -5,18 +6,20 @@ import {
   extractString,
 } from "../../nodes/OnOffice/utils/parameterExtraction";
 
+type MockFn = ReturnType<typeof mock>;
+
 describe("parameterExtraction", () => {
   const mockExecuteFunctions = {
-    getNodeParameter: jest.fn(),
+    getNodeParameter: mock(),
   } as unknown as IExecuteFunctions;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    (mockExecuteFunctions.getNodeParameter as MockFn).mockClear();
   });
 
   describe("extractString", () => {
     it("should extract string parameter", () => {
-      (mockExecuteFunctions.getNodeParameter as jest.Mock).mockReturnValue(
+      (mockExecuteFunctions.getNodeParameter as MockFn).mockReturnValue(
         "test-value",
       );
 
@@ -30,7 +33,7 @@ describe("parameterExtraction", () => {
     });
 
     it("should convert non-string values to string", () => {
-      (mockExecuteFunctions.getNodeParameter as jest.Mock).mockReturnValue(
+      (mockExecuteFunctions.getNodeParameter as MockFn).mockReturnValue(
         123,
       );
 
@@ -39,7 +42,7 @@ describe("parameterExtraction", () => {
     });
 
     it("should convert null to string", () => {
-      (mockExecuteFunctions.getNodeParameter as jest.Mock).mockReturnValue(
+      (mockExecuteFunctions.getNodeParameter as MockFn).mockReturnValue(
         null,
       );
 
@@ -48,7 +51,7 @@ describe("parameterExtraction", () => {
     });
 
     it("should convert undefined to string", () => {
-      (mockExecuteFunctions.getNodeParameter as jest.Mock).mockReturnValue(
+      (mockExecuteFunctions.getNodeParameter as MockFn).mockReturnValue(
         undefined,
       );
 
@@ -57,7 +60,7 @@ describe("parameterExtraction", () => {
     });
 
     it("should handle nested parameter paths", () => {
-      (mockExecuteFunctions.getNodeParameter as jest.Mock).mockReturnValue(
+      (mockExecuteFunctions.getNodeParameter as MockFn).mockReturnValue(
         "nested-value",
       );
 
@@ -76,7 +79,7 @@ describe("parameterExtraction", () => {
     });
 
     it("should handle different itemIndex values", () => {
-      (mockExecuteFunctions.getNodeParameter as jest.Mock).mockReturnValue(
+      (mockExecuteFunctions.getNodeParameter as MockFn).mockReturnValue(
         "value",
       );
 
@@ -89,7 +92,7 @@ describe("parameterExtraction", () => {
     });
 
     it("should handle string with special characters", () => {
-      (mockExecuteFunctions.getNodeParameter as jest.Mock).mockReturnValue(
+      (mockExecuteFunctions.getNodeParameter as MockFn).mockReturnValue(
         "test@example.com",
       );
 
@@ -100,7 +103,7 @@ describe("parameterExtraction", () => {
     it("should handle URN format strings", () => {
       const urnValue =
         "urn:onoffice-de-ns:smart:2.5:relationTypes:estate:address:buyer";
-      (mockExecuteFunctions.getNodeParameter as jest.Mock).mockReturnValue(
+      (mockExecuteFunctions.getNodeParameter as MockFn).mockReturnValue(
         urnValue,
       );
 
@@ -109,7 +112,7 @@ describe("parameterExtraction", () => {
     });
 
     it("should use default value when getNodeParameter returns it", () => {
-      (mockExecuteFunctions.getNodeParameter as jest.Mock).mockReturnValue(
+      (mockExecuteFunctions.getNodeParameter as MockFn).mockReturnValue(
         "default-val",
       );
 
@@ -123,7 +126,7 @@ describe("parameterExtraction", () => {
     });
 
     it("should handle empty string", () => {
-      (mockExecuteFunctions.getNodeParameter as jest.Mock).mockReturnValue("");
+      (mockExecuteFunctions.getNodeParameter as MockFn).mockReturnValue("");
 
       const result = extractString(mockExecuteFunctions, "param", 0, "");
       expect(result).toBe("");
@@ -132,7 +135,7 @@ describe("parameterExtraction", () => {
 
   describe("extractNumber", () => {
     it("should extract numeric parameter", () => {
-      (mockExecuteFunctions.getNodeParameter as jest.Mock).mockReturnValue(123);
+      (mockExecuteFunctions.getNodeParameter as MockFn).mockReturnValue(123);
 
       const result = extractNumber(mockExecuteFunctions, "testParam", 0, 0);
       expect(result).toBe(123);
@@ -144,7 +147,7 @@ describe("parameterExtraction", () => {
     });
 
     it("should convert string to number", () => {
-      (mockExecuteFunctions.getNodeParameter as jest.Mock).mockReturnValue(
+      (mockExecuteFunctions.getNodeParameter as MockFn).mockReturnValue(
         "456",
       );
 
@@ -153,14 +156,14 @@ describe("parameterExtraction", () => {
     });
 
     it("should handle zero", () => {
-      (mockExecuteFunctions.getNodeParameter as jest.Mock).mockReturnValue(0);
+      (mockExecuteFunctions.getNodeParameter as MockFn).mockReturnValue(0);
 
       const result = extractNumber(mockExecuteFunctions, "testParam", 0, 0);
       expect(result).toBe(0);
     });
 
     it("should handle negative numbers", () => {
-      (mockExecuteFunctions.getNodeParameter as jest.Mock).mockReturnValue(
+      (mockExecuteFunctions.getNodeParameter as MockFn).mockReturnValue(
         -456,
       );
 
@@ -169,7 +172,7 @@ describe("parameterExtraction", () => {
     });
 
     it("should handle large numbers", () => {
-      (mockExecuteFunctions.getNodeParameter as jest.Mock).mockReturnValue(
+      (mockExecuteFunctions.getNodeParameter as MockFn).mockReturnValue(
         999999999,
       );
 
@@ -178,7 +181,7 @@ describe("parameterExtraction", () => {
     });
 
     it("should convert decimal strings to number", () => {
-      (mockExecuteFunctions.getNodeParameter as jest.Mock).mockReturnValue(
+      (mockExecuteFunctions.getNodeParameter as MockFn).mockReturnValue(
         "123.45",
       );
 
@@ -187,7 +190,7 @@ describe("parameterExtraction", () => {
     });
 
     it("should handle NaN by converting to number", () => {
-      (mockExecuteFunctions.getNodeParameter as jest.Mock).mockReturnValue(
+      (mockExecuteFunctions.getNodeParameter as MockFn).mockReturnValue(
         "not-a-number",
       );
 
@@ -196,7 +199,7 @@ describe("parameterExtraction", () => {
     });
 
     it("should preserve itemIndex parameter", () => {
-      (mockExecuteFunctions.getNodeParameter as jest.Mock).mockReturnValue(123);
+      (mockExecuteFunctions.getNodeParameter as MockFn).mockReturnValue(123);
 
       extractNumber(mockExecuteFunctions, "testParam", 3, 0);
       expect(mockExecuteFunctions.getNodeParameter).toHaveBeenCalledWith(
@@ -207,7 +210,7 @@ describe("parameterExtraction", () => {
     });
 
     it("should handle pagination parameters", () => {
-      (mockExecuteFunctions.getNodeParameter as jest.Mock).mockReturnValue(50);
+      (mockExecuteFunctions.getNodeParameter as MockFn).mockReturnValue(50);
 
       const result = extractNumber(
         mockExecuteFunctions,
@@ -219,7 +222,7 @@ describe("parameterExtraction", () => {
     });
 
     it("should convert null to 0", () => {
-      (mockExecuteFunctions.getNodeParameter as jest.Mock).mockReturnValue(
+      (mockExecuteFunctions.getNodeParameter as MockFn).mockReturnValue(
         null,
       );
 
@@ -228,7 +231,7 @@ describe("parameterExtraction", () => {
     });
 
     it("should convert undefined to NaN", () => {
-      (mockExecuteFunctions.getNodeParameter as jest.Mock).mockReturnValue(
+      (mockExecuteFunctions.getNodeParameter as MockFn).mockReturnValue(
         undefined,
       );
 
@@ -239,7 +242,7 @@ describe("parameterExtraction", () => {
 
   describe("extractBoolean", () => {
     it("should extract boolean parameter as true", () => {
-      (mockExecuteFunctions.getNodeParameter as jest.Mock).mockReturnValue(
+      (mockExecuteFunctions.getNodeParameter as MockFn).mockReturnValue(
         true,
       );
 
@@ -258,7 +261,7 @@ describe("parameterExtraction", () => {
     });
 
     it("should extract boolean parameter as false", () => {
-      (mockExecuteFunctions.getNodeParameter as jest.Mock).mockReturnValue(
+      (mockExecuteFunctions.getNodeParameter as MockFn).mockReturnValue(
         false,
       );
 
@@ -267,7 +270,7 @@ describe("parameterExtraction", () => {
     });
 
     it("should convert truthy number to boolean", () => {
-      (mockExecuteFunctions.getNodeParameter as jest.Mock).mockReturnValue(1);
+      (mockExecuteFunctions.getNodeParameter as MockFn).mockReturnValue(1);
 
       const result = extractBoolean(
         mockExecuteFunctions,
@@ -279,14 +282,14 @@ describe("parameterExtraction", () => {
     });
 
     it("should convert falsy number to boolean", () => {
-      (mockExecuteFunctions.getNodeParameter as jest.Mock).mockReturnValue(0);
+      (mockExecuteFunctions.getNodeParameter as MockFn).mockReturnValue(0);
 
       const result = extractBoolean(mockExecuteFunctions, "testParam", 0, true);
       expect(result).toBe(false);
     });
 
     it("should convert truthy string to boolean", () => {
-      (mockExecuteFunctions.getNodeParameter as jest.Mock).mockReturnValue(
+      (mockExecuteFunctions.getNodeParameter as MockFn).mockReturnValue(
         "true",
       );
 
@@ -300,7 +303,7 @@ describe("parameterExtraction", () => {
     });
 
     it("should convert falsy string to boolean", () => {
-      (mockExecuteFunctions.getNodeParameter as jest.Mock).mockReturnValue(
+      (mockExecuteFunctions.getNodeParameter as MockFn).mockReturnValue(
         "false",
       );
 
@@ -309,7 +312,7 @@ describe("parameterExtraction", () => {
     });
 
     it("should convert null to false", () => {
-      (mockExecuteFunctions.getNodeParameter as jest.Mock).mockReturnValue(
+      (mockExecuteFunctions.getNodeParameter as MockFn).mockReturnValue(
         null,
       );
 
@@ -318,7 +321,7 @@ describe("parameterExtraction", () => {
     });
 
     it("should convert undefined to false", () => {
-      (mockExecuteFunctions.getNodeParameter as jest.Mock).mockReturnValue(
+      (mockExecuteFunctions.getNodeParameter as MockFn).mockReturnValue(
         undefined,
       );
 
@@ -327,7 +330,7 @@ describe("parameterExtraction", () => {
     });
 
     it("should handle different itemIndex values", () => {
-      (mockExecuteFunctions.getNodeParameter as jest.Mock).mockReturnValue(
+      (mockExecuteFunctions.getNodeParameter as MockFn).mockReturnValue(
         true,
       );
 

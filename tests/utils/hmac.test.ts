@@ -1,3 +1,4 @@
+import { describe, it, expect } from "bun:test";
 import { generateHmac } from "../../nodes/OnOffice/utils/hmac";
 
 describe("hmac", () => {

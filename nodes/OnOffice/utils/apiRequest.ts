@@ -1,6 +1,7 @@
 import {
   IExecuteFunctions,
   IHttpRequestOptions,
+  IPollFunctions,
   NodeOperationError,
 } from "n8n-workflow";
 import { getActionId } from "./actionIds";
@@ -9,7 +10,7 @@ import { API_CONFIG, API_URL } from "./constants";
 import { ApiRequestOptions, OnOfficeApiResponse, RequestBody } from "./types";
 
 export async function apiRequest(
-  this: IExecuteFunctions,
+  this: IExecuteFunctions | IPollFunctions,
   options: ApiRequestOptions,
 ): Promise<OnOfficeApiResponse> {
   const { resourceType, operation, parameters, resourceId = "" } = options;

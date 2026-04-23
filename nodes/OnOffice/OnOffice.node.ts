@@ -24,7 +24,7 @@ export class OnOffice implements INodeType {
   description: INodeTypeDescription = {
     displayName: "onOffice",
     name: "onoffice",
-    icon: "file:onoffice.svg",
+    icon: "file:../../icons/onoffice.svg",
     group: ["output"],
     version: 1,
     subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',

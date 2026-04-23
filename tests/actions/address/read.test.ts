@@ -1,17 +1,24 @@
+import { describe, it, expect, mock, beforeEach } from "bun:test";
 import { IExecuteFunctions } from "n8n-workflow";
+
+mock.module("../../../nodes/OnOffice/utils/apiRequest", () => ({
+  apiRequest: mock(),
+}));
+
 import { readAddress } from "../../../nodes/OnOffice/actions/address/read/execute";
 import { apiRequest } from "../../../nodes/OnOffice/utils/apiRequest";
 import addressSuccessResponse from "../../__fixtures__/api-responses/address-success.json";
 
-jest.mock("../../../nodes/OnOffice/utils/apiRequest");
+type MockFn = ReturnType<typeof mock>;
+const mockApiRequest = apiRequest as unknown as MockFn;
 
 describe("OnOffice Address Read Action", () => {
   let mockExecuteFunctions: IExecuteFunctions;
 
   beforeEach(() => {
     mockExecuteFunctions = {
-      getNodeParameter: jest.fn(),
-      getNode: jest.fn(() => ({
+      getNodeParameter: mock(),
+      getNode: mock(() => ({
         id: "test-node-id",
         name: "OnOffice",
         type: "n8n-nodes-onoffice.onoffice",
@@ -26,13 +33,13 @@ describe("OnOffice Address Read Action", () => {
       },
     } as unknown as IExecuteFunctions;
 
-    jest.clearAllMocks();
+    mockApiRequest.mockClear();
   });
 
   describe("Basic read operation", () => {
     it("should successfully read address with specific recordids and fields", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       mockGetNodeParameter.mockImplementation((paramName: string) => {
         if (paramName === "recordids") {
@@ -47,7 +54,7 @@ describe("OnOffice Address Read Action", () => {
         return undefined;
       });
 
-      (apiRequest as jest.Mock).mockResolvedValue(addressSuccessResponse);
+      (apiRequest as MockFn).mockResolvedValue(addressSuccessResponse);
 
       const result = await readAddress.call(mockExecuteFunctions, 0);
 
@@ -74,7 +81,7 @@ describe("OnOffice Address Read Action", () => {
 
     it("should handle single recordid", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       mockGetNodeParameter.mockImplementation((paramName: string) => {
         if (paramName === "recordids") {
@@ -89,7 +96,7 @@ describe("OnOffice Address Read Action", () => {
         return undefined;
       });
 
-      (apiRequest as jest.Mock).mockResolvedValue(addressSuccessResponse);
+      (apiRequest as MockFn).mockResolvedValue(addressSuccessResponse);
 
       const result = await readAddress.call(mockExecuteFunctions, 0);
 
@@ -107,7 +114,7 @@ describe("OnOffice Address Read Action", () => {
 
     it("should handle empty recordids", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       mockGetNodeParameter.mockImplementation((paramName: string) => {
         if (paramName === "recordids") {
@@ -122,7 +129,7 @@ describe("OnOffice Address Read Action", () => {
         return undefined;
       });
 
-      (apiRequest as jest.Mock).mockResolvedValue(addressSuccessResponse);
+      (apiRequest as MockFn).mockResolvedValue(addressSuccessResponse);
 
       const result = await readAddress.call(mockExecuteFunctions, 0);
 
@@ -140,7 +147,7 @@ describe("OnOffice Address Read Action", () => {
 
     it("should handle all available fields", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       const allFields = [
         "Anrede-Titel",
@@ -176,7 +183,7 @@ describe("OnOffice Address Read Action", () => {
         return undefined;
       });
 
-      (apiRequest as jest.Mock).mockResolvedValue(addressSuccessResponse);
+      (apiRequest as MockFn).mockResolvedValue(addressSuccessResponse);
 
       const result = await readAddress.call(mockExecuteFunctions, 0);
 
@@ -196,7 +203,7 @@ describe("OnOffice Address Read Action", () => {
   describe("Pagination and sorting", () => {
     it("should handle pagination parameters", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       mockGetNodeParameter.mockImplementation((paramName: string) => {
         if (paramName === "recordids") {
@@ -214,7 +221,7 @@ describe("OnOffice Address Read Action", () => {
         return undefined;
       });
 
-      (apiRequest as jest.Mock).mockResolvedValue(addressSuccessResponse);
+      (apiRequest as MockFn).mockResolvedValue(addressSuccessResponse);
 
       const result = await readAddress.call(mockExecuteFunctions, 0);
 
@@ -232,7 +239,7 @@ describe("OnOffice Address Read Action", () => {
 
     it("should handle sorting parameters", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       mockGetNodeParameter.mockImplementation((paramName: string) => {
         if (paramName === "recordids") {
@@ -250,7 +257,7 @@ describe("OnOffice Address Read Action", () => {
         return undefined;
       });
 
-      (apiRequest as jest.Mock).mockResolvedValue(addressSuccessResponse);
+      (apiRequest as MockFn).mockResolvedValue(addressSuccessResponse);
 
       const result = await readAddress.call(mockExecuteFunctions, 0);
 
@@ -268,7 +275,7 @@ describe("OnOffice Address Read Action", () => {
 
     it("should handle sorting with ASC order", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       mockGetNodeParameter.mockImplementation((paramName: string) => {
         if (paramName === "recordids") {
@@ -286,7 +293,7 @@ describe("OnOffice Address Read Action", () => {
         return undefined;
       });
 
-      (apiRequest as jest.Mock).mockResolvedValue(addressSuccessResponse);
+      (apiRequest as MockFn).mockResolvedValue(addressSuccessResponse);
 
       const result = await readAddress.call(mockExecuteFunctions, 0);
 
@@ -306,7 +313,7 @@ describe("OnOffice Address Read Action", () => {
   describe("Additional fields", () => {
     it("should handle formatoutput parameter", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       mockGetNodeParameter.mockImplementation((paramName: string) => {
         if (paramName === "recordids") {
@@ -323,7 +330,7 @@ describe("OnOffice Address Read Action", () => {
         return undefined;
       });
 
-      (apiRequest as jest.Mock).mockResolvedValue(addressSuccessResponse);
+      (apiRequest as MockFn).mockResolvedValue(addressSuccessResponse);
 
       const result = await readAddress.call(mockExecuteFunctions, 0);
 
@@ -340,7 +347,7 @@ describe("OnOffice Address Read Action", () => {
 
     it("should handle formatoutput as false", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       mockGetNodeParameter.mockImplementation((paramName: string) => {
         if (paramName === "recordids") {
@@ -357,7 +364,7 @@ describe("OnOffice Address Read Action", () => {
         return undefined;
       });
 
-      (apiRequest as jest.Mock).mockResolvedValue(addressSuccessResponse);
+      (apiRequest as MockFn).mockResolvedValue(addressSuccessResponse);
 
       const result = await readAddress.call(mockExecuteFunctions, 0);
 
@@ -376,7 +383,7 @@ describe("OnOffice Address Read Action", () => {
   describe("Complex scenarios", () => {
     it("should handle complete request with all parameters", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       mockGetNodeParameter.mockImplementation((paramName: string) => {
         if (paramName === "recordids") {
@@ -405,7 +412,7 @@ describe("OnOffice Address Read Action", () => {
         return undefined;
       });
 
-      (apiRequest as jest.Mock).mockResolvedValue(addressSuccessResponse);
+      (apiRequest as MockFn).mockResolvedValue(addressSuccessResponse);
 
       const result = await readAddress.call(mockExecuteFunctions, 0);
 
@@ -439,7 +446,7 @@ describe("OnOffice Address Read Action", () => {
 
     it("should handle minimal request with no optional parameters", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       mockGetNodeParameter.mockImplementation((paramName: string) => {
         if (paramName === "recordids") {
@@ -454,7 +461,7 @@ describe("OnOffice Address Read Action", () => {
         return undefined;
       });
 
-      (apiRequest as jest.Mock).mockResolvedValue(addressSuccessResponse);
+      (apiRequest as MockFn).mockResolvedValue(addressSuccessResponse);
 
       const result = await readAddress.call(mockExecuteFunctions, 0);
 
@@ -472,7 +479,7 @@ describe("OnOffice Address Read Action", () => {
 
     it("should verify response data structure", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       mockGetNodeParameter.mockImplementation((paramName: string) => {
         if (paramName === "recordids") {
@@ -487,7 +494,7 @@ describe("OnOffice Address Read Action", () => {
         return undefined;
       });
 
-      (apiRequest as jest.Mock).mockResolvedValue(addressSuccessResponse);
+      (apiRequest as MockFn).mockResolvedValue(addressSuccessResponse);
 
       const result = await readAddress.call(mockExecuteFunctions, 0);
 
@@ -530,7 +537,7 @@ describe("OnOffice Address Read Action", () => {
   describe("Edge cases", () => {
     it("should handle recordids with spaces", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       mockGetNodeParameter.mockImplementation((paramName: string) => {
         if (paramName === "recordids") {
@@ -545,7 +552,7 @@ describe("OnOffice Address Read Action", () => {
         return undefined;
       });
 
-      (apiRequest as jest.Mock).mockResolvedValue(addressSuccessResponse);
+      (apiRequest as MockFn).mockResolvedValue(addressSuccessResponse);
 
       const result = await readAddress.call(mockExecuteFunctions, 0);
 
@@ -562,7 +569,7 @@ describe("OnOffice Address Read Action", () => {
 
     it("should handle zero limit", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       mockGetNodeParameter.mockImplementation((paramName: string) => {
         if (paramName === "recordids") {
@@ -579,7 +586,7 @@ describe("OnOffice Address Read Action", () => {
         return undefined;
       });
 
-      (apiRequest as jest.Mock).mockResolvedValue(addressSuccessResponse);
+      (apiRequest as MockFn).mockResolvedValue(addressSuccessResponse);
 
       const result = await readAddress.call(mockExecuteFunctions, 0);
 
@@ -596,7 +603,7 @@ describe("OnOffice Address Read Action", () => {
 
     it("should handle maximum limit of 500", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
-        .getNodeParameter as jest.Mock;
+        .getNodeParameter as MockFn;
 
       mockGetNodeParameter.mockImplementation((paramName: string) => {
         if (paramName === "recordids") {
@@ -613,7 +620,7 @@ describe("OnOffice Address Read Action", () => {
         return undefined;
       });
 
-      (apiRequest as jest.Mock).mockResolvedValue(addressSuccessResponse);
+      (apiRequest as MockFn).mockResolvedValue(addressSuccessResponse);
 
       const result = await readAddress.call(mockExecuteFunctions, 0);
 
