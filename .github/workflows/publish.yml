@@ -27,6 +27,20 @@ jobs:
           fi
           echo "Tag verified on main branch"
 
+      - name: Verify version is not reserved on npm
+        run: |
+          VERSION=$(jq -r '.version' package.json)
+          PKG=$(jq -r '.name' package.json)
+          echo "Checking if $PKG@$VERSION is available on npm..."
+          # npm's "time" map lists every version ever published, including unpublished
+          # ones (which are permanently reserved). Fail fast before provenance is signed.
+          if curl -sfL "https://registry.npmjs.org/$PKG" \
+               | jq -e --arg v "$VERSION" '.time[$v]' > /dev/null; then
+            echo "::error::Version $VERSION was published before (possibly unpublished). npm permanently reserves these numbers. Bump to a different version."
+            exit 1
+          fi
+          echo "Version $VERSION is available."
+
       - uses: oven-sh/setup-bun@v2
 
       - uses: actions/setup-node@v4
