@@ -1,5 +1,5 @@
 {
-	"node": "n8n-nodes-base.onOfficeTrigger",
+	"node": "n8n-nodes-onoffice.onOfficeTrigger",
 	"nodeVersion": "1.0",
 	"codexVersion": "1.0",
 	"categories": ["Productivity"],

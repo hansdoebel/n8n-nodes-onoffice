@@ -5,7 +5,7 @@ mock.module("../../nodes/OnOffice/utils/apiRequest", () => ({
   apiRequest: mock(),
 }));
 
-import { OnOfficeTrigger } from "../../nodes/OnOfficeTrigger/OnOfficeTrigger.node";
+import { OnOfficeTrigger } from "../../nodes/OnOffice/OnOfficeTrigger.node";
 import { apiRequest } from "../../nodes/OnOffice/utils/apiRequest";
 
 type MockFn = ReturnType<typeof mock>;

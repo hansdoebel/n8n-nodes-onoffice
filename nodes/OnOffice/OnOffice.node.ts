@@ -23,7 +23,7 @@ import * as searchcriteria from "./actions/searchcriteria";
 export class OnOffice implements INodeType {
   description: INodeTypeDescription = {
     displayName: "onOffice",
-    name: "onoffice",
+    name: "onOffice",
     icon: "file:../../icons/onoffice.svg",
     group: ["output"],
     version: 1,

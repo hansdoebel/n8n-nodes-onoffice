@@ -9,8 +9,8 @@ import {
   NodeOperationError,
 } from "n8n-workflow";
 
-import { apiRequest } from "../OnOffice/utils/apiRequest";
-import { extractResponseData } from "../OnOffice/utils/responseHandler";
+import { apiRequest } from "./utils/apiRequest";
+import { extractResponseData } from "./utils/responseHandler";
 import {
   CompareMode,
   PollStaticData,

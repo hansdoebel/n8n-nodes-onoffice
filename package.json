@@ -57,7 +57,7 @@
 		],
 		"nodes": [
 			"dist/nodes/OnOffice/OnOffice.node.js",
-			"dist/nodes/OnOfficeTrigger/OnOfficeTrigger.node.js"
+			"dist/nodes/OnOffice/OnOfficeTrigger.node.js"
 		]
 	},
 	"devDependencies": {
