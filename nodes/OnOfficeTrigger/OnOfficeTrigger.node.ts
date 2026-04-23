@@ -12,14 +12,19 @@ import {
 import { apiRequest } from "../OnOffice/utils/apiRequest";
 import { extractResponseData } from "../OnOffice/utils/responseHandler";
 import {
+  CompareMode,
   PollStaticData,
   extractRecords,
-  maxDate,
+  isGreater,
+  maxValue,
 } from "./utils/pollState";
 
 interface EventConfig {
   resourceType: "address" | "estate";
-  dateField: string;
+  trackingField: string;
+  sortby: string;
+  sortorder: "ASC" | "DESC";
+  compareAs: CompareMode;
   fieldsParam: string;
   defaultData: string[];
 }
@@ -27,13 +32,28 @@ interface EventConfig {
 const EVENTS: Record<string, EventConfig> = {
   addressCreated: {
     resourceType: "address",
-    dateField: "Eintragsdatum",
+    trackingField: "Eintragsdatum",
+    sortby: "Eintragsdatum",
+    sortorder: "DESC",
+    compareAs: "string",
     fieldsParam: "addressFields",
     defaultData: ["Vorname", "Name", "Email"],
   },
   estateUpdated: {
     resourceType: "estate",
-    dateField: "geaendert_am",
+    trackingField: "geaendert_am",
+    sortby: "geaendert_am",
+    sortorder: "DESC",
+    compareAs: "string",
+    fieldsParam: "estateFields",
+    defaultData: ["objektnr_extern", "objektart", "ort"],
+  },
+  estateCreated: {
+    resourceType: "estate",
+    trackingField: "Id",
+    sortby: "Id",
+    sortorder: "DESC",
+    compareAs: "numeric",
     fieldsParam: "estateFields",
     defaultData: ["objektnr_extern", "objektart", "ort"],
   },
@@ -85,7 +105,7 @@ export class OnOfficeTrigger implements INodeType {
     group: ["trigger"],
     version: 1,
     description:
-      "Polls onOffice for newly created addresses or modified estates",
+      "Polls onOffice for newly created addresses, newly created estates, or modified estates",
     subtitle: '={{$parameter["event"]}}',
     defaults: {
       name: "onOffice Trigger",
@@ -110,12 +130,17 @@ export class OnOfficeTrigger implements INodeType {
           {
             name: "Address Created",
             value: "addressCreated",
-            description: "Trigger when new addresses appear (sorted by Eintragsdatum)",
+            description: "Trigger when new addresses appear (sorted by Eintragsdatum DESC)",
+          },
+          {
+            name: "Estate Created",
+            value: "estateCreated",
+            description: 'Trigger when new estates appear (sorted by ID DESC)',
           },
           {
             name: "Estate Updated",
             value: "estateUpdated",
-            description: "Trigger when estates are modified (sorted by geaendert_am)",
+            description: "Trigger when estates are modified (sorted by geaendert_am DESC)",
           },
         ],
       },
@@ -154,13 +179,12 @@ export class OnOfficeTrigger implements INodeType {
         type: "multiOptions",
         displayOptions: {
           show: {
-            event: ["estateUpdated"],
+            event: ["estateUpdated", "estateCreated"],
           },
         },
         options: ESTATE_FIELD_OPTIONS,
         default: ["objektnr_extern", "objektart", "ort"],
-        description:
-          "Fields to return for each estate. geaendert_am is always included.",
+        description: 'Fields to return for each estate. The tracking field (geaendert_am for Estate Updated, ID for Estate Created) is always included.',
       },
       {
         displayName: "Additional Options",
@@ -212,15 +236,15 @@ export class OnOfficeTrigger implements INodeType {
 
     const data =
       selectedFields.length > 0 ? [...selectedFields] : [...event.defaultData];
-    if (!data.includes(event.dateField)) data.unshift(event.dateField);
+    if (!data.includes(event.trackingField)) data.unshift(event.trackingField);
 
     const isManual = this.getMode() === "manual";
 
     const parameters: IDataObject = {
       data,
       listlimit: isManual ? 1 : limit,
-      sortby: event.dateField,
-      sortorder: "DESC",
+      sortby: event.sortby,
+      sortorder: event.sortorder,
     };
 
     if (additionalOptions.formatoutput !== undefined) {
@@ -249,18 +273,21 @@ export class OnOfficeTrigger implements INodeType {
     }
 
     const staticData = this.getWorkflowStaticData("node") as PollStaticData;
-    const lastSeenDate = staticData.lastSeenDate;
+    const lastSeen = staticData.lastSeen ?? staticData.lastSeenDate;
 
-    const newMax = maxDate(records, event.dateField);
-    if (newMax) staticData.lastSeenDate = newMax;
+    const newMax = maxValue(records, event.trackingField, event.compareAs);
+    if (newMax) {
+      staticData.lastSeen = newMax;
+      delete staticData.lastSeenDate;
+    }
 
-    if (!lastSeenDate) {
+    if (!lastSeen) {
       return null;
     }
 
     const emitted = records.filter((r) => {
-      const v = r[event.dateField];
-      return typeof v === "string" && v > lastSeenDate;
+      const v = r[event.trackingField];
+      return typeof v === "string" && isGreater(v, lastSeen, event.compareAs);
     });
 
     return emitted.length > 0

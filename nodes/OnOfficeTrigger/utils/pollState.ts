@@ -1,6 +1,10 @@
 import { IDataObject } from "n8n-workflow";
 
+export type CompareMode = "string" | "numeric";
+
 export interface PollStaticData extends IDataObject {
+  lastSeen?: string;
+  // Legacy key — read-only fallback so existing trigger instances keep their baseline across upgrades.
   lastSeenDate?: string;
 }
 
@@ -24,14 +28,26 @@ export function extractRecords(
   return records;
 }
 
-export function maxDate(
+export function isGreater(a: string, b: string, mode: CompareMode): boolean {
+  if (mode === "numeric") {
+    const na = Number(a);
+    const nb = Number(b);
+    if (Number.isNaN(na) || Number.isNaN(nb)) return false;
+    return na > nb;
+  }
+  return a > b;
+}
+
+export function maxValue(
   records: IDataObject[],
-  dateField: string,
+  field: string,
+  mode: CompareMode,
 ): string | undefined {
   let max: string | undefined;
   for (const r of records) {
-    const v = r[dateField];
-    if (typeof v === "string" && (!max || v > max)) {
+    const v = r[field];
+    if (typeof v !== "string") continue;
+    if (max === undefined || isGreater(v, max, mode)) {
       max = v;
     }
   }
