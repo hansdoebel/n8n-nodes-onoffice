@@ -39,4 +39,5 @@ jobs:
       - run: bun install
       - run: bun run build
       - run: bun run lint
+      - run: bun test
       - run: npm publish --access public
