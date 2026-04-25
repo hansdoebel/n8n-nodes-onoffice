@@ -1,6 +1,7 @@
 import {
   IAuthenticate,
   ICredentialDataDecryptedObject,
+  ICredentialTestRequest,
   ICredentialType,
   IDataObject,
   IHttpRequestOptions,
@@ -8,7 +9,7 @@ import {
   INodeProperties,
 } from "n8n-workflow";
 import { generateHmac } from "../nodes/OnOffice/utils/hmac";
-import { API_CONFIG } from "../nodes/OnOffice/utils/constants";
+import { API_CONFIG, API_URL } from "../nodes/OnOffice/utils/constants";
 import { RequestBody } from "../nodes/OnOffice/utils/types";
 
 export class OnOfficeApi implements ICredentialType {
@@ -68,5 +69,49 @@ export class OnOfficeApi implements ICredentialType {
 
     requestOptions.body = { ...body, token };
     return requestOptions;
+  };
+
+  test: ICredentialTestRequest = {
+    request: {
+      method: "POST",
+      url: API_URL,
+      body: {
+        request: {
+          actions: [
+            {
+              actionid: "urn:onoffice-de-ns:smart:2.5:smartml:action:read",
+              resourcetype: "basicsettings",
+              identifier: "",
+              resourceid: "",
+              parameters: {
+                data: {
+                  basicData: {
+                    characteristicsCi: ["claim"],
+                  },
+                },
+              },
+            },
+          ],
+        },
+      },
+    },
+    rules: [
+      {
+        type: "responseSuccessBody",
+        properties: {
+          key: "status.code",
+          value: 400,
+          message: "Invalid Secret or API Token",
+        },
+      },
+      {
+        type: "responseSuccessBody",
+        properties: {
+          key: "status.code",
+          value: 500,
+          message: "OnOffice API server error",
+        },
+      },
+    ],
   };
 }
