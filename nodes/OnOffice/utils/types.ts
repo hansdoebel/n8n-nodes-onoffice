@@ -44,9 +44,6 @@ export interface RequestBody {
   actionid: string;
   resourcetype: string;
   identifier: string;
-  timestamp: number;
-  hmac: string;
-  hmac_version: number;
   resourceid: string;
   parameters: IDataObject;
 }
