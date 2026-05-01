@@ -46,6 +46,37 @@ export function parseCommaSeparatedNumbers(input: string): number[] {
     .filter((num) => !isNaN(num));
 }
 
+export class IdListError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "IdListError";
+  }
+}
+
+export function normalizeIdList(input: unknown): number[] | undefined {
+  if (input === undefined || input === null || input === "") {
+    return undefined;
+  }
+
+  let ids: number[];
+
+  if (typeof input === "string") {
+    ids = parseCommaSeparatedNumbers(input);
+  } else if (typeof input === "number") {
+    ids = isNaN(input) ? [] : [input];
+  } else if (Array.isArray(input)) {
+    ids = input
+      .map((item) => (typeof item === "number" ? item : Number(item)))
+      .filter((num) => !isNaN(num));
+  } else {
+    throw new IdListError(
+      `Expected a number, comma-separated string, or array of IDs; got ${typeof input}.`,
+    );
+  }
+
+  return ids.length > 0 ? ids : undefined;
+}
+
 export function buildParameters(
   baseParameters: IDataObject,
   additionalFields: IDataObject,

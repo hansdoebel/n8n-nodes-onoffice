@@ -136,6 +136,107 @@ describe("OnOffice Agentslog Read Action", () => {
       expect(result[0].json).toHaveProperty("records");
     });
 
+    it("should accept addressid as a single number", async () => {
+      const mockGetNodeParameter = mockExecuteFunctions
+        .getNodeParameter as MockFn;
+
+      mockGetNodeParameter.mockImplementation((paramName: string) => {
+        if (paramName === "parameters") {
+          return ["Objekt_nr"];
+        }
+        if (paramName === "additionalFields") {
+          return { addressid: 6795 };
+        }
+        return undefined;
+      });
+
+      (apiRequest as MockFn).mockResolvedValue(agentslogSuccessResponse);
+
+      await readAgentslog.call(mockExecuteFunctions, 0);
+
+      expect(apiRequest).toHaveBeenCalledWith({
+        resourceType: "agentslog",
+        operation: "read",
+        parameters: expect.objectContaining({
+          addressid: [6795],
+        }),
+      });
+    });
+
+    it("should accept estateid as an array of numbers", async () => {
+      const mockGetNodeParameter = mockExecuteFunctions
+        .getNodeParameter as MockFn;
+
+      mockGetNodeParameter.mockImplementation((paramName: string) => {
+        if (paramName === "parameters") {
+          return ["Objekt_nr"];
+        }
+        if (paramName === "additionalFields") {
+          return { estateid: [123, 456, 789] };
+        }
+        return undefined;
+      });
+
+      (apiRequest as MockFn).mockResolvedValue(agentslogSuccessResponse);
+
+      await readAgentslog.call(mockExecuteFunctions, 0);
+
+      expect(apiRequest).toHaveBeenCalledWith({
+        resourceType: "agentslog",
+        operation: "read",
+        parameters: expect.objectContaining({
+          estateid: [123, 456, 789],
+        }),
+      });
+    });
+
+    it("should accept estateid as an array of numeric strings", async () => {
+      const mockGetNodeParameter = mockExecuteFunctions
+        .getNodeParameter as MockFn;
+
+      mockGetNodeParameter.mockImplementation((paramName: string) => {
+        if (paramName === "parameters") {
+          return ["Objekt_nr"];
+        }
+        if (paramName === "additionalFields") {
+          return { estateid: ["123", "456"] };
+        }
+        return undefined;
+      });
+
+      (apiRequest as MockFn).mockResolvedValue(agentslogSuccessResponse);
+
+      await readAgentslog.call(mockExecuteFunctions, 0);
+
+      expect(apiRequest).toHaveBeenCalledWith({
+        resourceType: "agentslog",
+        operation: "read",
+        parameters: expect.objectContaining({
+          estateid: [123, 456],
+        }),
+      });
+    });
+
+    it("should throw a validation error for unsupported addressid type (object)", async () => {
+      const mockGetNodeParameter = mockExecuteFunctions
+        .getNodeParameter as MockFn;
+
+      mockGetNodeParameter.mockImplementation((paramName: string) => {
+        if (paramName === "parameters") {
+          return [];
+        }
+        if (paramName === "additionalFields") {
+          return { addressid: { id: 123 } };
+        }
+        return undefined;
+      });
+
+      await expect(
+        readAgentslog.call(mockExecuteFunctions, 0),
+      ).rejects.toThrow(/number, comma-separated string, or array/i);
+      expect(apiRequest).not.toHaveBeenCalled();
+    });
+
     it("should handle estateid parameter", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
         .getNodeParameter as MockFn;
@@ -206,7 +307,7 @@ describe("OnOffice Agentslog Read Action", () => {
   });
 
   describe("Filter operations", () => {
-    it("should handle filter rules with IN operator", async () => {
+    it("should handle filter rules with 'is' operator (single value)", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
         .getNodeParameter as MockFn;
 
@@ -220,7 +321,53 @@ describe("OnOffice Agentslog Read Action", () => {
               rule: [
                 {
                   field: "Aktionsart",
-                  operator: "IN",
+                  operator: "is",
+                  value: "Download",
+                },
+              ],
+            },
+          };
+        }
+        return undefined;
+      });
+
+      (apiRequest as MockFn).mockResolvedValue(agentslogSuccessResponse);
+
+      const result = await readAgentslog.call(mockExecuteFunctions, 0);
+
+      expect(apiRequest).toHaveBeenCalledWith({
+        resourceType: "agentslog",
+        operation: "read",
+        parameters: expect.objectContaining({
+          filter: {
+            Aktionsart: [
+              {
+                op: "is",
+                val: "Download",
+              },
+            ],
+          },
+        }),
+      });
+
+      expect(result).toHaveLength(1);
+    });
+
+    it("should handle filter rules with 'in' operator (lowercase, splits comma-separated value)", async () => {
+      const mockGetNodeParameter = mockExecuteFunctions
+        .getNodeParameter as MockFn;
+
+      mockGetNodeParameter.mockImplementation((paramName: string) => {
+        if (paramName === "parameters") {
+          return [];
+        }
+        if (paramName === "additionalFields") {
+          return {
+            filterRules: {
+              rule: [
+                {
+                  field: "Aktionsart",
+                  operator: "in",
                   value: "Download,Email",
                 },
               ],
@@ -241,7 +388,7 @@ describe("OnOffice Agentslog Read Action", () => {
           filter: {
             Aktionsart: [
               {
-                op: "IN",
+                op: "in",
                 val: ["Download", "Email"],
               },
             ],
@@ -252,7 +399,7 @@ describe("OnOffice Agentslog Read Action", () => {
       expect(result).toHaveLength(1);
     });
 
-    it("should handle filter rules with BETWEEN operator", async () => {
+    it("should handle filter rules with 'between' operator (lowercase, splits comma-separated value)", async () => {
       const mockGetNodeParameter = mockExecuteFunctions
         .getNodeParameter as MockFn;
 
@@ -266,7 +413,7 @@ describe("OnOffice Agentslog Read Action", () => {
               rule: [
                 {
                   field: "Datum",
-                  operator: "BETWEEN",
+                  operator: "between",
                   value: "2024-02-01,2024-02-28",
                 },
               ],
@@ -287,7 +434,7 @@ describe("OnOffice Agentslog Read Action", () => {
           filter: {
             Datum: [
               {
-                op: "BETWEEN",
+                op: "between",
                 val: ["2024-02-01", "2024-02-28"],
               },
             ],
@@ -312,12 +459,12 @@ describe("OnOffice Agentslog Read Action", () => {
               rule: [
                 {
                   field: "Aktionsart",
-                  operator: "IN",
+                  operator: "in",
                   value: "Download,Email",
                 },
                 {
                   field: "Datum",
-                  operator: "BETWEEN",
+                  operator: "between",
                   value: "2024-02-01,2024-02-28",
                 },
               ],
@@ -338,13 +485,13 @@ describe("OnOffice Agentslog Read Action", () => {
           filter: {
             Aktionsart: [
               {
-                op: "IN",
+                op: "in",
                 val: ["Download", "Email"],
               },
             ],
             Datum: [
               {
-                op: "BETWEEN",
+                op: "between",
                 val: ["2024-02-01", "2024-02-28"],
               },
             ],
@@ -353,6 +500,54 @@ describe("OnOffice Agentslog Read Action", () => {
       });
 
       expect(result).toHaveLength(1);
+    });
+
+    it("should throw a validation error when a filter rule is incomplete (only value)", async () => {
+      const mockGetNodeParameter = mockExecuteFunctions
+        .getNodeParameter as MockFn;
+
+      mockGetNodeParameter.mockImplementation((paramName: string) => {
+        if (paramName === "parameters") {
+          return [];
+        }
+        if (paramName === "additionalFields") {
+          return {
+            filterRules: {
+              rule: [{ value: "Download" }],
+            },
+          };
+        }
+        return undefined;
+      });
+
+      await expect(
+        readAgentslog.call(mockExecuteFunctions, 0),
+      ).rejects.toThrow(/incomplete/i);
+      expect(apiRequest).not.toHaveBeenCalled();
+    });
+
+    it("should not include a filter parameter when filterRules is empty", async () => {
+      const mockGetNodeParameter = mockExecuteFunctions
+        .getNodeParameter as MockFn;
+
+      mockGetNodeParameter.mockImplementation((paramName: string) => {
+        if (paramName === "parameters") {
+          return [];
+        }
+        if (paramName === "additionalFields") {
+          return {
+            filterRules: { rule: [] },
+          };
+        }
+        return undefined;
+      });
+
+      (apiRequest as MockFn).mockResolvedValue(agentslogSuccessResponse);
+
+      await readAgentslog.call(mockExecuteFunctions, 0);
+
+      const callArgs = (apiRequest as MockFn).mock.calls[0][0];
+      expect(callArgs.parameters).not.toHaveProperty("filter");
     });
 
     it("should handle filter as JSON string", async () => {

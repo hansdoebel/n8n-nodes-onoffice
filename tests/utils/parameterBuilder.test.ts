@@ -1,5 +1,7 @@
 import { describe, it, expect } from "bun:test";
 import {
+  IdListError,
+  normalizeIdList,
   parseCommaSeparatedNumbers,
   parseCommaSeparatedStrings,
 } from "../../nodes/OnOffice/utils/parameterBuilder";
@@ -168,6 +170,74 @@ describe("parameterBuilder", () => {
       expect(result).toContain(456);
       expect(result).toContain(789);
       expect(result).toContain(999);
+    });
+  });
+
+  describe("normalizeIdList", () => {
+    it("returns undefined for undefined", () => {
+      expect(normalizeIdList(undefined)).toBeUndefined();
+    });
+
+    it("returns undefined for null", () => {
+      expect(normalizeIdList(null)).toBeUndefined();
+    });
+
+    it("returns undefined for empty string", () => {
+      expect(normalizeIdList("")).toBeUndefined();
+    });
+
+    it("returns undefined for empty array", () => {
+      expect(normalizeIdList([])).toBeUndefined();
+    });
+
+    it("returns undefined for a string with only invalid entries", () => {
+      expect(normalizeIdList("abc,def")).toBeUndefined();
+    });
+
+    it("parses a comma-separated string into numbers", () => {
+      expect(normalizeIdList("123,456,789")).toEqual([123, 456, 789]);
+    });
+
+    it("trims whitespace in comma-separated strings", () => {
+      expect(normalizeIdList(" 123 , 456 ")).toEqual([123, 456]);
+    });
+
+    it("wraps a single number into an array", () => {
+      expect(normalizeIdList(123)).toEqual([123]);
+    });
+
+    it("returns undefined for NaN number", () => {
+      expect(normalizeIdList(NaN)).toBeUndefined();
+    });
+
+    it("accepts an array of numbers", () => {
+      expect(normalizeIdList([123, 456])).toEqual([123, 456]);
+    });
+
+    it("accepts an array of numeric strings", () => {
+      expect(normalizeIdList(["123", "456"])).toEqual([123, 456]);
+    });
+
+    it("accepts a mixed array of numbers and numeric strings", () => {
+      expect(normalizeIdList([123, "456", 789])).toEqual([123, 456, 789]);
+    });
+
+    it("filters non-numeric entries from arrays", () => {
+      expect(normalizeIdList([123, "abc", 456])).toEqual([123, 456]);
+    });
+
+    it("throws IdListError for an object", () => {
+      expect(() => normalizeIdList({ id: 123 })).toThrow(IdListError);
+    });
+
+    it("throws IdListError for a boolean", () => {
+      expect(() => normalizeIdList(true)).toThrow(IdListError);
+    });
+
+    it("throws IdListError with a descriptive message", () => {
+      expect(() => normalizeIdList({ id: 123 })).toThrow(
+        /number, comma-separated string, or array/i,
+      );
     });
   });
 });

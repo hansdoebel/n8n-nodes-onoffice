@@ -1,175 +1,92 @@
-import {
-  IDataObject,
-  IExecuteFunctions,
-  INodeExecutionData,
-} from "n8n-workflow";
+import { IExecuteFunctions, INodeExecutionData } from "n8n-workflow";
 import { apiRequest } from "../../../utils/apiRequest";
 import {
-  buildParameters,
-  parseCommaSeparatedNumbers,
+	buildParameters,
+	IdListError,
+	normalizeIdList,
 } from "../../../utils/parameterBuilder";
 import {
-  handleExecutionError,
-  throwValidationError,
+	handleExecutionError,
+	throwValidationError,
 } from "../../../utils/errorHandling";
 import { AgentslogParameters } from "../../../utils/types";
 import {
-  ensureObject,
-  extractObject,
-  extractStringArray,
+	extractObject,
+	extractStringArray,
 } from "../../../utils/parameterExtraction";
 import { extractResponseData } from "../../../utils/responseHandler";
+import {
+	buildFilterFromRules,
+	FilterRuleError,
+	parseFilterFromJsonOrObject,
+} from "../../../utils/filterBuilder";
+
+const AGENTSLOG_COMMON_FIELDS = [
+	"listlimit",
+	"listoffset",
+	"sortby",
+	"sortorder",
+	"fullmail",
+	"tracking",
+] as const;
 
 export async function readAgentslog(
-  this: IExecuteFunctions,
-  itemIndex: number,
+	this: IExecuteFunctions,
+	itemIndex: number,
 ): Promise<INodeExecutionData[]> {
-  try {
-    let parameters: AgentslogParameters = {
-      data: [],
-    };
+	try {
+		const additionalFields = extractObject(this, "additionalFields", itemIndex, {});
+		const fieldSelections = extractStringArray(this, "parameters", itemIndex, []);
 
-    const fieldSelections = extractStringArray(
-      this,
-      "parameters",
-      itemIndex,
-      [],
-    );
-    if (fieldSelections.length > 0) {
-      parameters.data = fieldSelections;
-    }
+		const parameters: AgentslogParameters = {
+			data: fieldSelections,
+		};
 
-    const additionalFields = extractObject(
-      this,
-      "additionalFields",
-      itemIndex,
-      {},
-    );
+		const addressIds = normalizeIdList(additionalFields.addressid);
+		if (addressIds) {
+			parameters.addressid = addressIds;
+		}
 
-    const addressIdInput = ensureObject(additionalFields).addressid ?? "";
-    if (typeof addressIdInput === "string" && addressIdInput) {
-      parameters.addressid = parseCommaSeparatedNumbers(addressIdInput);
-    }
+		const estateIds = normalizeIdList(additionalFields.estateid);
+		if (estateIds) {
+			parameters.estateid = estateIds;
+		}
 
-    const estateIdInput = ensureObject(additionalFields).estateid ?? "";
-    if (typeof estateIdInput === "string" && estateIdInput) {
-      parameters.estateid = parseCommaSeparatedNumbers(estateIdInput);
-    }
+		const projectIdValue = additionalFields.projectid;
+		if (projectIdValue !== undefined && projectIdValue !== null) {
+			const projectId = Number(projectIdValue);
+			if (!isNaN(projectId)) {
+				parameters.projectid = projectId;
+			}
+		}
 
-    const projectIdValue = ensureObject(additionalFields).projectid;
-    if (projectIdValue !== undefined && projectIdValue !== null) {
-      const projectId = Number(projectIdValue);
-      if (!isNaN(projectId)) {
-        parameters.projectid = projectId;
-      }
-    }
+		const computedFilter =
+			buildFilterFromRules(additionalFields.filterRules) ??
+			parseFilterFromJsonOrObject(additionalFields.filter);
 
-    let computedFilter = undefined;
+		if (computedFilter) {
+			parameters.filter = computedFilter;
+		}
 
-    const filterRules = ensureObject(additionalFields).filterRules ?? {};
+		const commonFields = buildParameters({}, additionalFields, AGENTSLOG_COMMON_FIELDS);
+		Object.assign(parameters, commonFields);
 
-    if (
-      filterRules && typeof filterRules === "object" && "rule" in filterRules
-    ) {
-      const ruleValue = (filterRules as Record<string, unknown>).rule;
-      const rulesArray = Array.isArray(ruleValue)
-        ? (ruleValue as Array<
-          { field?: string; operator?: string; value?: string }
-        >)
-        : [
-          ruleValue as {
-            field?: string;
-            operator?: string;
-            value?: string;
-          },
-        ];
+		const response = await apiRequest.call(this, {
+			resourceType: "agentslog",
+			operation: "read",
+			parameters,
+		});
 
-      for (const rule of rulesArray) {
-        const field = typeof rule.field === "string" ? rule.field : undefined;
-        const operator = typeof rule.operator === "string"
-          ? rule.operator
-          : undefined;
-        const value = typeof rule.value === "string" ? rule.value : "";
-
-        if (!field || !operator || value === "") continue;
-
-        if (!computedFilter) {
-          computedFilter = {} as IDataObject;
-        }
-        if (!computedFilter[field]) {
-          computedFilter[field] = [];
-        }
-
-        let val: string | string[] = value;
-
-        if (operator === "IN" || operator === "BETWEEN") {
-          val = value
-            .split(",")
-            .map((v) => v.trim())
-            .filter(Boolean);
-        }
-
-        if (!Array.isArray(computedFilter[field])) {
-          computedFilter[field] = [] as Array<{ op: string; val: unknown }>;
-        }
-        const fieldArray = computedFilter[field] as Array<{
-          op: string;
-          val: unknown;
-        }>;
-        fieldArray.push({
-          op: operator,
-          val,
-        });
-      }
-    }
-
-    if (!computedFilter) {
-      const filterValue = ensureObject(additionalFields).filter;
-      if (filterValue) {
-        if (typeof filterValue === "string" && filterValue !== "") {
-          try {
-            computedFilter = JSON.parse(filterValue);
-          } catch {
-            throwValidationError(
-              this,
-              "Filter must be valid JSON",
-              itemIndex,
-            );
-          }
-        } else if (typeof filterValue === "object") {
-          computedFilter = filterValue;
-        }
-      }
-    }
-
-    if (computedFilter) {
-      parameters.filter = computedFilter;
-    }
-
-    const agentslogFields = [
-      "listlimit",
-      "listoffset",
-      "sortby",
-      "sortorder",
-      "fullmail",
-      "tracking",
-    ];
-    const commonFields = buildParameters({}, additionalFields, agentslogFields);
-    parameters = { ...parameters, ...commonFields };
-
-    const response = await apiRequest.call(this, {
-      resourceType: "agentslog",
-      operation: "read",
-      parameters,
-    });
-
-    const responseData = extractResponseData(response);
-    return this.helpers.returnJsonArray(responseData);
-  } catch (error) {
-    handleExecutionError(this, error, {
-      resource: "agentslog",
-      operation: "read",
-      itemIndex,
-    });
-  }
+		const responseData = extractResponseData(response);
+		return this.helpers.returnJsonArray(responseData);
+	} catch (error) {
+		if (error instanceof FilterRuleError || error instanceof IdListError) {
+			throwValidationError(this, error.message, itemIndex);
+		}
+		handleExecutionError(this, error, {
+			resource: "agentslog",
+			operation: "read",
+			itemIndex,
+		});
+	}
 }

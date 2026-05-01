@@ -98,7 +98,7 @@ export const readAgentslogDescription: INodeProperties[] = [
         type: "string",
         default: "",
         description:
-          "Return only entries associated with these address records. Input multiple IDs separated by commas.",
+          'Return only entries associated with these address records. Accepts a single ID, a comma-separated string (e.g. "123,456"), or an array of IDs from an expression.',
       },
       {
         displayName: "Estate ID",
@@ -106,7 +106,7 @@ export const readAgentslogDescription: INodeProperties[] = [
         type: "string",
         default: "",
         description:
-          "Return only entries associated with these estate records. Input multiple IDs separated by commas.",
+          'Return only entries associated with these estate records. Accepts a single ID, a comma-separated string (e.g. "123,456"), or an array of IDs from an expression.',
       },
       {
         displayName: "Filter Rules",
@@ -114,7 +114,7 @@ export const readAgentslogDescription: INodeProperties[] = [
         type: "fixedCollection",
         placeholder: "Add Filter Rule",
         description:
-          "Add one or more filter rules. Values for IN/BETWEEN can be entered comma-separated.",
+          "Add one or more filter rules. Values for In, Not In, and Between must be entered comma-separated.",
         typeOptions: {
           multipleValues: true,
         },
@@ -128,12 +128,13 @@ export const readAgentslogDescription: INodeProperties[] = [
                 displayName: "Field",
                 name: "field",
                 type: "options",
+                description:
+                  "Field to filter on. Note: the onOffice API does not support filtering on Adress_nr, Objekt_nr, Benutzer, or dauer — use the dedicated Address ID / Estate ID parameters instead.",
                 options: [
-                  { name: "Adress_nr", value: "Adress_nr" },
                   { name: "Aktionsart", value: "Aktionsart" },
                   { name: "Aktionstyp", value: "Aktionstyp" },
+                  { name: "Bemerkung", value: "Bemerkung" },
                   { name: "Datum", value: "Datum" },
-                  { name: "Objekt_nr", value: "Objekt_nr" },
                 ],
                 default: "Aktionsart",
               },
@@ -142,9 +143,17 @@ export const readAgentslogDescription: INodeProperties[] = [
                 name: "operator",
                 type: "options",
                 options: [
-                  { name: "Equals", value: "is" },
-                  { name: "In", value: "in" },
                   { name: "Between", value: "between" },
+                  { name: "Equals (=)", value: "is" },
+                  { name: "Greater Than (>)", value: ">" },
+                  { name: "Greater Than or Equal (>=)", value: ">=" },
+                  { name: "In", value: "in" },
+                  { name: "Less Than (<)", value: "<" },
+                  { name: "Less Than or Equal (<=)", value: "<=" },
+                  { name: "Like", value: "like" },
+                  { name: "Not Equal (!=)", value: "!=" },
+                  { name: "Not In", value: "not in" },
+                  { name: "Not Like", value: "not like" },
                 ],
                 default: "is",
               },
@@ -154,7 +163,7 @@ export const readAgentslogDescription: INodeProperties[] = [
                 type: "string",
                 default: "",
                 description:
-                  "For IN or BETWEEN, use comma-separated values (e.g. 'Download,Email' or '2024-01-01,2024-12-31')",
+                  "For In, Not In, and Between, use comma-separated values (e.g. 'Download,Email' or '2024-01-01,2024-12-31'). For Like and Not Like, use '%' as a wildcard.",
               },
             ],
           },
